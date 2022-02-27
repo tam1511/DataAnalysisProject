@@ -1,0 +1,311 @@
+---
+title: "Team Project"
+author: "Le Thi Thanh Tam _ Pham Thi Anh Thu _ Hoang Thuy Duong"
+date: "1/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# 1. Team Member Contribution
+
+There are 3 members in our group doing this project: Le Thi Thanh Tam, Pham Thi Anh Thu and Hoang Thuy Duong. After considering, we decided the team member contribution as: 45% for Le Thi Thanh Tam,30 % for Pham Thi Anh Thu and 25 % for Hoang Thuy Duong. Although we have done the project together, Le Thi Thanh Tam is the leader and guides 2 other team members much. Therefore, there is not denied that Le Thi Thanh Tam has contributed to this group project much more 2 others. 
+
+
+# 2. Executive Summary
+
+This paper is the result of data analysis project about the Oral Diabete drug category data. There are 4 main parts in this paper, including background information, data description, model description and finding & implementation. In particular, in this project, we try to find out the most significant model with appropriate variables in order to find out some effects of medicines to the consumers. This paper will focus on only 4 medicines, including Actos, Lantus, Avandia and Glucophage/Metformin with the time is in the last 40 weeks (exclude the very last week). 
+
+# 3. Background Information: Oral Diabete Drug Category
+
+```{r}
+
+# Products' Value 
+products = c("Actos", "Amaryl", "Apidra", "Avandamet", "Avandaryl", "Avandia", "Fortamet",
+             "Glucophage XR", "Glucophage/Metformin", "Glucovance/Metaglip", "Lantus", 
+             "Other Insulins", "Pran/Star/Prec/Glyset", "Sulfonylureas", "Symlin")
+
+# Name of Pharmaceutical Companies' Value 
+company_name = c("Takeda Pharmaceutical Company", "Sanofi", "Aventis Pharmeceutical Inc", "SB Pharmco",
+                 "Glaxo Smith Kline", "Glaxo Smith Kline", "Andrx labs LLC", "Bristol Myers Squibb Products & Medicines", 
+                 "Bristol Myers Squibb Products & Medicines", "Bristol Myers Squibb Products & Medicines", "Sanofi", 
+                 "Eli Lilly, Novo Nordisk, Sanofi", "Pharmacia and Upjohn Company LLC", "Marcel Janbon", "Amylin Pharmaceuticals")
+
+# Year of Introduction's Value 
+intro_year = c("1999", "1995", "2004", "2002", "2006", "1999", "2004", "1957", "1995", "2002", 
+               "2000", "1922", "1996", "1950", "2005")
+
+# Chemical Ingredients' Value 
+chemical_ingredients = c("Pioglitazone Hydrochloride", "Glimepiride", "Insulin Glusine Recombinant",
+                         "Metformin Hydrochloride, Rosiglitazone Maleate", "Glimepiride, Rosiglitazone Maleate", 
+                         "Rosiglitazone Maleate", "Metformin Hydrochloride", "Metformin Hydrochloride", "Metformin Hydrochloride", 
+                         "Glyburide, Metformin Hydrochloride", "Insulin Glargine Recombinant", "N/A", 
+                         "Miglitol", "N/A", "Pramlintide Acetate")
+
+# Date Expiration's Value 
+date_expiration = c("Jan, 2011", "Oct, 2020", "N/A", "N/A", "N/A", "Jan, 2012", "Mar, 2021", 
+                    "Sep, 2000", "Jun, 2003", "Sep, 2000", "Mar, 2028", "N/A", "N/A", "N/A", "Mar, 2019")
+
+# Data frame 
+knitr::kable(data.frame(products, company_name, intro_year, chemical_ingredients, date_expiration))
+
+```
+
+There are 15 different kinds of medicines in Oral Diabete drug category. Particularly, these medicines belonged to different pharmeceutical companies. However, there are some kinds of medicines in a similar company. For example, Avandaryl and Avandia are all belonged to Glaxo Smith Kline Company as well as Glucophage XR, Glucophage/Metformin and Glucovance/Metaglip are belonged to Bristol Myers Squibb Products & Medicines Company. 
+
+# 4 Data Description
+
+* The orginal data contain 182,680 patient visits where a prescription was written by 2,127 physicians. This data was conducted for over an 18 month period from January 1st, 2007 to June 30th, 2008. 
+* For this study, we select “regular” physicians, those characterized by the following two conditions. First, the doctor has made at least one prescription every month.  Second, the doctor has changed the prescription or not (switched brand). Moreover, we confine our attention in our analysis to 4 drugs "Actos","Lantus", "Glucophage/Metformin", "Avandia". And we only focus on the last 40 weeks and exclude the last week because it includes only two dates. 
+
+```{r warning=FALSE, message=FALSE}
+setwd("C:/Users/pc hp/Documents")
+
+table1 = read.csv("C:/Users/pc hp/Documents/Table3.csv", header = TRUE, sep=",")
+
+#generate table 1
+
+table1 = knitr::kable (table1,digits = 3, caption = "\\textbf{Descriptive Statistics for Oral Diabetes Data}", align = "lccc", table.envir = "figure")
+
+library(dplyr)
+library(kableExtra)
+
+table1 %>%
+kable_styling() %>%
+  add_header_above(c(" " = 1, " " = 1, "Statistics (across physicians)" = 2))
+```
+
+* Table 2 provides the basic descriptive statistics for the 379 physicians sampled.  There are
+24,714 patient visit observations, out of which 5,018 are mild patient visits (20.3%) while the rest are made by 19,697 (79.7%). 10,604 senior patients (42.9%) and the rest is 14,110 (57.1%).  Each patient visit leads to write a prescription; 7,057(28.6%) and 7,057 (22.3%) and 1240 (5.0%) of prescriptions go to Actos,Lantos and Avandia respectively. Among that, Glucophage/Metformin accounts for the highest percentage with 14,677 (59.4%). During the last 40 weeks period, 5086 detailing activities were directed to physicians.
+* An “average” physician in our sample is characterized by a combination of 65 patient visits (16 Mild Severity and 52 Not Mild) and 28 Senior and 37 not and 13 detailings. As evidenced by high standard deviations, there is a signicant amount of heterogeneity across physicians. 
+
+
+* Table 3 presents, for each of the 4 drugs, its market share with respect to each of the
+variables discussed above. The top prescription share drugs are Glucophage/Metformin and Actos. 
+Glucophage/Metformin, the largest prescription share drug (51.5%), is also the most requested by patients (53%), but is not the most detailed (only 0.02%). Due partly to Glucophage/Metformin’s large prescription share, prescription switches from Glucophage/Metformin happen most frequently. Actos is the second drug for prescription (24.8%) but the most detailing drug. Avandia accounts for only 4.4% in prescription but 28.6% in detailing. 
+
+
+```{r KIW, echo = FALSE}
+
+table2 = read.csv(file= "C:/Users/pc hp/Documents/table4.csv")
+knitr::kable (table2,digits = 3, caption = "\\textbf{Drug Shares}", align = "lccc")
+
+```
+
+# Figure 1 Prescription and Detailing Patterns
+
+*  Figure 1 shows (a) weekly category volumes of prescription and detailing, (b)
+weekly prescription shares, and (c) weekly detailing shares. Visual inspection of the plots
+in the panel (a) suggests that the prescription and detailing volumes are quite stable over time.  They both had slight fluctuations around their weekly means (approximately 750 prescriptions and 125 detailings) throughout the sample span. Two outliers occur during the Christmas and New Year holiday season (weeks 14 and 15)
+* The prescription shares in the panel (b) indicates they all product see the decreasing in the New Year day.The detailing shares in the panel (c) show that their evolution patterns are not very systematic. 
+
+```{r message=FALSE, warning=FALSE, results='hide'}
+library(data.table)
+library(ggplot2)
+load("E:/Practicum 2/OD_RX.RData")
+df.RX = df
+## loading OD_Detailing.RData
+load("E:/Practicum 2/OD_Detailing.RData")
+df.DT = df
+# Remove df from workspace
+rm(df)
+# Drop the time info from the following variables
+df.RX$WEEK_END_DATE = as.Date(df.RX$WEEK_END_DATE) 
+df.DT$WEEK_END_DATE = as.Date(df.DT$WEEK_END_DATE)
+
+# Sort DATA 
+# Divide Patient insurance type into "HMO/PPO/POS" = "Y" and not = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "HMO/PPO/POS"] = "Private"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "CASH"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "INDEMNITY"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "MEDICAID"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "MEDICARE W/ SECONDARY COVERAGE"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "MEDICARE"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "NONE"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "NOT KNOWN"] = "N"
+df.RX$PATIENT_INSURANCE_TYPE_DESC[df.RX$PATIENT_INSURANCE_TYPE_DESC == "VA/GOVERNMENT"] = "N"
+
+## count the number of PRODUCT by SEVERITY
+A = df.RX[, .N, by = .(PRODUCT, SEVERITY)] 
+## divide into 2 dummy variables "Mild" = Y and "not " = N
+df.RX$SEVERITY[df.RX$SEVERITY == "MILD"] = "Mild"
+df.RX$SEVERITY[df.RX$SEVERITY == "MODERATE"] = 0
+df.RX$SEVERITY[df.RX$SEVERITY == "SEVERE"] = 0
+
+## divide into 2 dummy variables for PATIENT_AGE ">65" = Senior "<65" = N
+df.RX$PATIENT_AGE[df.RX$PATIENT_AGE >= 65] = "Senior"
+df.RX$PATIENT_AGE[df.RX$PATIENT_AGE < 65] = "N"
+df.RX$PATIENT_AGE[df.RX$PATIENT_AGE == 8] = "N"
+df.RX$PATIENT_AGE[df.RX$PATIENT_AGE == 7] = "N"
+
+# Sort df.RX and df.DT by GEO_PHYSICIAN_KEY and then by WEEK_END_DATE
+library(dplyr)
+df.RX = df.RX %>% arrange(GEO_PHYSICIAN_KEY, WEEK_END_DATE)
+df.DT = df.DT %>% arrange(GEO_PHYSICIAN_KEY, WEEK_END_DATE)
+
+# sort drugs
+library(data.table)
+setDT(df.RX)[,.(Prescr=100*.N/nrow(df.RX)), by=PRODUCT][order(-rank(Prescr))]
+setDT(df.DT)[,.(Prescr=100*.N/nrow(df.DT)), by=PRODUCT][order(-rank(Prescr))]
+# Select the drugs
+vec.DrugSelected = c("Actos","Lantus", "Glucophage/Metformin", "Avandia")
+df.RX = df.RX %>% filter(PRODUCT %in% vec.DrugSelected)
+df.DT = df.DT %>% filter(PRODUCT %in% vec.DrugSelected)
+
+## Construct a vector containing drug names from df.RX$PRODUCT (df.RX$BRAND has more names)
+vec.DrugName = sort(unique(df.RX$PRODUCT))
+## Compute # of drugs
+N_Drug = length(vec.DrugName)
+
+# Filter out the last week of the observations
+## Construct a vector containing unique week end dates 
+vec.WEDate = sort(unique(df.RX$WEEK_END_DATE))
+df.RX = df.RX %>%
+  filter(WEEK_END_DATE %in% tail(vec.WEDate, n=41))
+df.RX = df.RX[df.RX$WEEK_END_DATE!="2008-07-04",]
+df.DT = df.DT %>%
+  filter(WEEK_END_DATE %in% tail(vec.WEDate, n=41))
+df.DT = df.DT[df.DT$WEEK_END_DATE!="2008-07-04",]
+
+# Select physicians and Brand
+## count the number of physicians by months
+df.A = df.RX[, .N, by = .(GEO_PHYSICIAN_KEY, MONTH)] 
+## count the number of months by physician
+df.B = df.A[,.N, by = GEO_PHYSICIAN_KEY] 
+## Now sort the physicians with the highest scores
+df.C = df.B[N==max(df.B$N)]
+## Create the new data frame for those physicians
+df.D = filter(df.RX, GEO_PHYSICIAN_KEY %in% df.C$GEO_PHYSICIAN_KEY)
+## selecting the physicians with changes in prescription
+df.final = df.D[SWITCHED_BRAND != "UNKNOWN",.N,by=GEO_PHYSICIAN_KEY]
+
+# Construct a vector containing unique physician idf from df.DT
+vec.PhyID = sort(unique(df.D$GEO_PHYSICIAN_KEY))
+# Filter out physicians from RX dataframe who did NOT receive any detailing form the selected drugs
+df.RX = df.RX %>% filter(GEO_PHYSICIAN_KEY %in% vec.PhyID)
+vec.PhyID = sort(unique(df.RX$GEO_PHYSICIAN_KEY)) # 379
+df.DT = df.DT %>% filter(GEO_PHYSICIAN_KEY %in% vec.PhyID)
+vec.PhyID = sort(unique(df.DT$GEO_PHYSICIAN_KEY)) # 379
+df.RX = df.RX %>% filter(GEO_PHYSICIAN_KEY %in% vec.PhyID)
+# Now both have the same group of 379 physicians
+# Compute # of physicians
+N_Phy = length(vec.PhyID) # 379
+N_Phy
+## Construct a vector containing unique week end dates
+vec.WEDate = sort(unique(df.RX$WEEK_END_DATE))
+## Compute # of weeks
+N_Week = length(vec.WEDate) 
+
+df.a = df.RX[, .N, by = .(PRODUCT, WEEK_END_DATE)] 
+df.b = df.DT[, .N, by = .(PRODUCT, WEEK_END_DATE)] 
+df.c = df.a %>% 
+  group_by(WEEK_END_DATE) %>% 
+  summarise(Prescription = sum(N))
+df.d = df.b %>% 
+  group_by(WEEK_END_DATE) %>% 
+  summarise(Detailing = sum(N))
+data1 = bind_cols(df.c, df.d)
+colnames(data1) = c("WEEK", "Prescription", "W2", "Detailing")
+data1$W2 = NULL
+data1$WEEK = c(1:40)
+```
+
+
+```{r}
+fig1 = data1 %>% 
+  ggplot(aes(WEEK)) +
+  geom_line(aes(y=Prescription, color = "Prescription"))+
+  geom_line(aes(y=Detailing, color="Detailing"))+
+  ylab("Volumn")
+print(fig1 + ggtitle("(a)Weekly Category Prescription and Detailing Volumes"))
+```
+
+```{r}
+df.a$percentage = prop.table(df.a$N)
+fig2 = df.a %>% 
+  ggplot(aes(x=WEEK_END_DATE, y=percentage, color=PRODUCT))+
+  geom_line()+
+  ylab("Share")
+print(fig2 + ggtitle("(b)Weekly Prescription Shares"))
+```
+
+```{r}
+df.b = df.DT[, .N, by = .(PRODUCT, WEEK_END_DATE)] 
+df.b$percentage = prop.table(df.b$N)
+fig3 = df.b %>% 
+  ggplot(aes(x=WEEK_END_DATE, y=percentage, color=PRODUCT))+
+  geom_line()+
+  ylab("Share")
+print(fig3 + ggtitle("(c)Weekly Detailing Shares"))
+```
+
+# 5. Model Description
+
+## Choice of independent variables 
+
+Our final model is : **choice ~ goodwill|severity+age+insurance**
+
+We decided to choose goodwill - alternative specific variable and 3 patient specific variables (severity, age, insurance type) for our final model. 
+
+* For the variable **PATIENT_AGE** representing the age of the patient, we converted it to one binary variable, with value "**Senior**" for age greater than or equal to 65, and value "**0**" age less than 65. The reason why we divided the variable that way is because in the drug market, 65 is the conventional magic number : Greater than or equal to 65 is considered as Senior, less than 65 is young people. 
+
+* For the variable **SEVERITY** representing the patient's condition, we also transformed it into one binary variable, with value "**Mild**" for mild, and value "**0**" for moderate and severe. The reason is shown in the following stacked bar chart.
+
+```{r echo=FALSE, warning = FALSE, message = FALSE}
+
+#data visualization for selected variable Severity 
+library(ggplot2)
+ggplot(df.RX, aes(fill=SEVERITY,x=PRODUCT)) + 
+    geom_bar(position="fill")+
+  labs(title="", x="Products",y="Severity Level Percentage")+
+  coord_flip()+
+  theme_minimal()
+```
+
+We can see that **Moderate** has the most observations. We also compute the prescription shares. The prescription shares of **Moderate** are closer to **Severe**, therefore we decided combine those 2 values. 
+
+* For the variable **PATIENT_INSURANCE_TYPE_DESC** representing the type of insurance plans that the patients own, we converted it to one binary variable : "**Private**" for HMP/PPO/POS and "**N**" for all the other cases. The reason is shown in the following bar chart.  
+
+```{r echo=FALSE, warning = FALSE, message = FALSE}
+#data visualization for selected variable Insurance Type 
+ggplot(df.RX, aes(fill=PATIENT_INSURANCE_TYPE_DESC,x=PRODUCT)) + 
+    geom_bar(position="fill")+
+  labs(title="", x="Products",y="Patient Age")+
+  coord_flip()+
+  theme_minimal()
+```
+
+We noticed that **HMO/PPO/POS**, which is the private insurance, occupies the most shares throughout all the 4 drugs. Therefore, we decided to assign one dummy value for **HMO/PPO/POS** and one dummy value for the other cases. 
+
+
+# 6. Findings and Business Implications
+
+## Main findings from the model estimation results 
+
+The baseline scenario is set up as the following: 
+* Brand = AC 
+* Severity =  0 (Not Mild)
+* Age = N (Not Senior, under 65)
+* Insurance = N (Not Private) 
+
+Relative to the baseline AC, if we change the drug from AC to AV, it has a positive impact on prescription (1.6599669). The physicians are more likely to prescribe AV; similarly with GL  and LT. Relative to AC, all those 3 brands have higher prescription propensity. Regarding **Severity**, AV has a lower probability of prescription (-0.9177910) than AC if the patient’s severity condition is **mild** while GL and LT have a higher probability of prescription (0.2045482) than AC. With regard to **Age**, all the 3 brands AV, GL and LT have a lower chance of prescription  to patients aged 65 and over, relative to AC. As regards **Insurance Type**, AV has less chance of prescription (-0.0977750) to the patients with **private insurance**, while GL and LT has higher chance,  relative to AC.
+
+The next factor we would like to mention is the brand specific intercept terms. Given AC as the baseline, if the drug is AV, the intercept term increases by 1.6599669. Which means, when all other variables equal to zero, the **intrinsic preference** for AV is nearly 1.66 relative to AC. Likewise, if the drug is GL, the intrinsic preference for GL is around 1.60 relative to AC. If the drug is LT, the intrinsic preference for LT is nearly 2.39 relative to AC. 
+
+In that case, LT has the highest intrinsic preference (2.3893368); followed by AV (1.6599669), GL (1.6030793) and AC, respectively. Which implies that, without any of the other variables (goodwill, severity, age, insurance), the predicted market shares of LT must be number one. However, according to the real data's observed market shares among all the 15 brands, GL ranked first (26.4%), followed by AC (12.9%), LT (10.24%) and AV (4.07%), respectively. We can see that the **observed market shares** and the order of the **intrinsic preferences** are different. 
+
+That difference might be explained by the other variables. The first one to consider is **Severity**. For mild patients, LT is more frequently prescribed relative to AC (0.5562606). The second one is **Age**. We noticed the negative coefficient of LT relative to AC (-0.1159849), which means the physicians have less tendency to prescribe LT to 65-and-older patients,  to AC.  The third variable is **Insurance Type**. We noticed that LT is prescribed more to the patients with **private insurance** (0.2826933). Taking into account those 3 variables, the physicians are less likely to prescribe LT to patients with severe condition, to senior  patients, and to patients with non-private insurance. 
+
+The alternative specific variable - **Goodwill**, has a positive impact on the prescription (0.0554673). What we can expect is, the drugs with more detailings will lead to higher goodwill for the physicians. With higher goodwill, the physicians are likely to prescribe more. 
+
+## Business implications 
+
+The model estimation results show that **Actos** have a tendency to be prescribed more to senior patients, relative to the 3 other drugs. This finding is within expectations. Older patients typically lack the ability to flush the drugs out of their kidneys before they accumulate at toxic levels. According to our market research, the chemical ingredient of **Actos** is pioglitazone hydrochloride, which is metabolized in the liver, not the kidneys and it is therefore typically the safest way to control type 2 diabetes in older patients. Meanwhile, Metformin, which is the chemical ingredient of **Glucophage**, is nearly always cited as the wrong treatment for older patients. 
+
+The model estimation results also indicate the impact of owning private insurance on the prescription choice of physicians. According to GoodRx website, the most common version of **Lantus** is covered by 82% of insurance plans at a co-pay of $37.50-$67.50; and the generic metformin (**Glucophage**) and generic pioglitazone (**Actos**) is covered by most insurance plans. That might be the reason why according to our model coefficients, **Glucophage/Metformin**, **Lantus** and **Actos** are more likely to be prescribed to patients with private insurance, relative to **Avandia**.
+
+In terms of severity condition, **Glucophage/Metformin** turns out to have higher probability of prescription to mild patients, relative to Actos. In fact, according to our market research, **Metformin** is generally the first medication prescribed for type 2 diabetes; it works primarily by lowering glucose production in the liver and improving your body's sensitivity to insulin. That might explain why **Glucophage/Metformin** has a high chance of prescription to patients with mild condition.
+
+
