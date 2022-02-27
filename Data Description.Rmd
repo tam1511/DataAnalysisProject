@@ -1,0 +1,88 @@
+---
+title: "Data Description"
+author: "Le Thi Thanh Tam _ 202005018"
+date: "1/16/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Prescription (OD_RX file _Treatment data)
+
+## Open and rename OD_RX file
+```{r df}
+load("E:/Practicum 2/OD_RX.RData")
+RXdf = df
+```
+## Description of RXdf data
+* Description of the market is "Oral Diabetes"
+```{r}
+unique(RXdf$MARKET_DESC)
+```
+
+* The data contain 182,680 patient visits where a prescription was written by 2,127 physicians
+```{r}
+# Numbers of patient visits
+length(unique(RXdf$PATIENT_VISIT_ID))
+# Numbers of Physicians who prescrip products
+length(unique(RXdf$GEO_PHYSICIAN_KEY))
+```
+
+* The data of treatment specializing in the pharmaceutical industry. This data was conducted for over an 18 month period from January 1st, 2007 to June 30th, 2008
+```{r}
+# Check the date period
+summary(RXdf$DAY_DT)
+```
+
+* During this time span, physicians report the name of the product prescribed during each patient visit
+```{r}
+# Showing the name of prescribed product
+unique(RXdf$PRODUCT)
+length(unique(RXdf$PRODUCT))
+```
+
+* There are two types of description of diagnosis (new diagnosis or ongoing diagnosis). For prescription switches brand, there has a short written description of the reason for switching is provided. In addition, the data includes the patient requested for a particular product
+
+* Top 5 products were prescribed most frequently are *Glucophage/Metformin*, *Actos*, *Sulfonylureas*, *Other Insulins*, *Lantus*
+```{r}
+Pro = table(RXdf$PRODUCT)
+head(sort(Pro, decreasing = TRUE), n=5)
+```
+
+# Detailing (OD_Detailing file_Detail Data)
+## Open and rename OD_Detailing data
+
+```{r}
+load("E:/Practicum 2/OD_Detailing.RData")
+DTdf = df
+```
+
+## Description of DTdf data
+* The data contains 1,958 Physician number for 56,685 detailing visits by pharmaceutical salespeople
+```{r}
+# Physician number
+length(unique(DTdf$GEO_PHYSICIAN_KEY))
+# Sales visit to identify unique visit
+length(unique(DTdf$SALES_VISIT_ID))
+```
+
+# A table for Prescription and Detailing for Products
+
+```{r}
+table1 = table(RXdf$PRODUCT)
+table2 = table(DTdf$PRODUCT)
+p1 = prop.table(table1)
+p2 = prop.table(table2)
+table = data.frame(table1 = table1, p1=p1, table2=table2, p2=p2)
+colnames(table) = c("Product", "Prescription", "Product2", "Percentage(%)",
+                    "Product3", "Detailing", "Product4", "Percentage(%)")
+table$Product2 = NULL
+table$Product3 = NULL
+table$Product4 = NULL
+knitr::kable(table,caption = "Prescription and Detailing Shares for the Drugs", 
+             "pipe", digits = 3,
+             align = c("l", "c", "c","c","c"))
+```
+
+* From the table, the top prescription share products are *Glucophage/Metformin*, *Actos*, *Sulfonylureas*, *Other Insulins*, *Lantus*. Glucophage/Metformin is the largest prescription share drug (0.26%), however it accounts for the smallest percentage in detailing. Other Insulins accounts for the highest detailed product in this data. 
